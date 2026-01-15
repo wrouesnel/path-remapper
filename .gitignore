@@ -1,3 +1,4 @@
+/path_remapper_app
 *.ko
 *.o
 *.o.d
