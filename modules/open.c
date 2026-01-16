@@ -22,6 +22,8 @@ static asmlinkage int (*orig_get_cmdline)(struct task_struct *task, char *buffer
 #define FIXED_SUFFIX ".crt"
 #define FIXED_REPLACEMENT "/etc/ssl/certs/ca-certificates.crt"
 
+
+
 static notrace asmlinkage long hook_get_cmdline(struct task_struct *task, char *buffer, int buflen) {
     return orig_get_cmdline(task,buffer,buflen);
 }
@@ -61,33 +63,31 @@ static notrace bool is_targeted_prefix(const char __user *pathname) {
     orig_get_cmdline(current, cmdline, PAGE_SIZE);
 
     // Log the filename
-    pr_debug("%s:%s\n", cmdline, buf);
+    pr_info("%s:%s->%s\n", cmdline, buf, FIXED_PREFIX);
     return true;
 }
 
 static notrace asmlinkage long hook_openat(const struct pt_regs *regs)
 {
+    char buf[PATH_MAX];
     struct pt_regs mregs;
     mregs = *regs;
-
     const char __user *pathname = (const char __user *)regs->si;
-    struct pt_regs *sregs = regs;
+
     if (is_targeted_prefix(pathname)) {
         // Substitute the target file instead
-        mregs.si = (unsigned long)FIXED_REPLACEMENT;
+        mregs.si = (unsigned long*)FIXED_REPLACEMENT;
     }
     return orig_openat(&mregs);
 }
 
 static notrace asmlinkage long hook_openat32(const struct pt_regs *regs)
 {
+    char buf[PATH_MAX];
     struct pt_regs mregs;
     mregs = *regs;
 
     const char __user *pathname = (const char __user *)regs->cx;
-    
-    struct pt_regs *sregs = regs;
-    
     if (is_targeted_prefix(pathname)) {
         mregs.cx = (unsigned long)FIXED_REPLACEMENT;
     }
@@ -96,11 +96,11 @@ static notrace asmlinkage long hook_openat32(const struct pt_regs *regs)
 
 static notrace asmlinkage long hook_openat32_compat(const struct pt_regs *regs)
 {
+    char buf[PATH_MAX];
     struct pt_regs mregs;
     mregs = *regs;
 
     const char __user *pathname = (const char __user *)regs->cx;
-    struct pt_regs *sregs = regs;
     if (is_targeted_prefix(pathname)) {
         mregs.cx = (unsigned long)FIXED_REPLACEMENT;
     }
@@ -166,8 +166,8 @@ static notrace asmlinkage long hook_openat32_compat(const struct pt_regs *regs)
 
 static struct ftrace_hook hooks[] = {
     HOOK("__x64_sys_openat",      hook_openat,      &orig_openat),
-    HOOK("__ia32_sys_openat",     hook_openat32,    &orig_openat32),
-    HOOK("__ia32_compat_sys_openat", hook_openat32_compat, &orig_openat32_compat),
+    // HOOK("__ia32_sys_openat",     hook_openat32,    &orig_openat32),
+    // HOOK("__ia32_compat_sys_openat", hook_openat32_compat, &orig_openat32_compat),
     // HOOK("__x64_sys_readlinkat",  hook_readlinkat,  &orig_readlinkat),
     // HOOK("__ia32_sys_readlinkat", hook_readlinkat32, &orig_readlinkat32),
     // HOOK("__x64_sys_access",      hook_access,      &orig_access),

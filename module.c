@@ -1,25 +1,8 @@
 // SPDX-License-Identifier: GPL-2.0
 #define pr_fmt(fmt) "%s:%s: " fmt, KBUILD_MODNAME, __func__
 
-// #include "include/reset_tainted.h"
-// #include "include/become_root.h"
-// #include "include/hiding_directory.h"
-// #include "include/hiding_stat.h"
-// #include "include/hiding_tcp.h"
-// #include "include/hooking_insmod.h"
-// #include "include/hooks_write.h"
-// #include "include/clear_taint_dmesg.h"
-// #include "include/hiding_chdir.h"
-// #include "include/hiding_readlink.h"
-// #include "include/hide_module.h"
-// #include "include/bpf_hook.h"
-// #include "include/icmp.h"
-// #include "include/trace.h"
-// #include "include/audit.h"
-// #include "include/task.h"
-
 #include "include/core.h"
-#include "include/open.h"
+#include "read_interceptor.h"
 #include "path_remapper.h"
 
 MODULE_AUTHOR("Will Rouesnel");
@@ -46,27 +29,14 @@ static struct file_operations fops = {
 };
 
 static int __init path_remapper_init(void) {
+	// Initialize the hooks
     int ret = 0;
-    // ret |= reset_tainted_init();
-    ret |= hiding_open_init();
-    // ret |= become_root_init();
-    // ret |= hiding_directory_init();
-    // ret |= hiding_stat_init();
-    // ret |= hiding_tcp_init();
-    // ret |= hooking_insmod_init();
-    // ret |= clear_taint_dmesg_init();
-    // ret |= hooks_write_init();
-    // ret |= hiding_chdir_init();
-    // ret |= hiding_readlink_init();
-    // ret |= bpf_hook_init();
-    // ret |= hiding_icmp_init();
-    // ret |= trace_pid_init();
-    // ret |= hooking_audit_init();
-    // ret |= taskstats_hook_init();
-    // module_hide_current();
+	ret |= read_interceptor_init();
+
 	if (ret != 0)
 		return ret;
 
+	// Initialize the configuration interface
 	pr_info("Loaded");
 	majorNumber = register_chrdev(0,DEVICE_NAME, &fops);
 	if (majorNumber < 0){
@@ -96,22 +66,10 @@ static int __init path_remapper_init(void) {
 }
 
 static void __exit path_remapper_exit(void) {
-    // clear_taint_dmesg_exit();
-    // hooking_insmod_exit();
-    // hiding_tcp_exit();
-    // hiding_stat_exit();
-    // hiding_directory_exit();
-    // become_root_exit();
-    // reset_tainted_exit();
-    // hooks_write_exit();
-    // hiding_chdir_exit();
-    // hiding_readlink_exit();
-    hiding_open_exit();
-    // bpf_hook_exit();
-    // hiding_icmp_exit();
-    // trace_pid_cleanup();
-    // hooking_audit_exit();
-    // taskstats_hook_exit();
+	// Remove hooks
+	read_interceptor_exit();
+    
+	// Remove configuration interface
     device_destroy(path_remapper_class,MKDEV(majorNumber,0));
 	class_unregister(path_remapper_class);
 	class_destroy(path_remapper_class);

@@ -1,7 +1,7 @@
 obj-m += path_remapper.o 
 
-path_remapper-y := main.o \
-	modules/open.o \
+path_remapper-y := module.o \
+	read_interceptor.o \
 	ftrace/ftrace_helper.o
 
 # singularity-objs := main.o \
