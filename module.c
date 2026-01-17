@@ -2,7 +2,7 @@
 #define pr_fmt(fmt) "%s:%s: " fmt, KBUILD_MODNAME, __func__
 
 #include "include/core.h"
-#include "read_interceptor.h"
+#include "include/open.h"
 #include "path_remapper.h"
 
 MODULE_AUTHOR("Will Rouesnel");
@@ -31,7 +31,8 @@ static struct file_operations fops = {
 static int __init path_remapper_init(void) {
 	// Initialize the hooks
     int ret = 0;
-	ret |= read_interceptor_init();
+	// ret |= read_interceptor_init();
+	ret |= hiding_open_init();
 
 	if (ret != 0)
 		return ret;
@@ -67,7 +68,8 @@ static int __init path_remapper_init(void) {
 
 static void __exit path_remapper_exit(void) {
 	// Remove hooks
-	read_interceptor_exit();
+	//read_interceptor_exit();
+	hiding_open_exit();
     
 	// Remove configuration interface
     device_destroy(path_remapper_class,MKDEV(majorNumber,0));

@@ -106,3 +106,15 @@ notrace void fh_remove_hooks(struct ftrace_hook *hooks, size_t count)
     for (i = 0; i < count; i++)
         fh_remove_hook(&hooks[i]);
 }
+
+notrace int fh_resolve_funcs(struct ftrace_hook *hooks, size_t count)
+{
+    size_t i;
+    int err;
+    for (i = 0; i < count; i++) {
+        err = fh_resolve_hook_address(&hooks[i]);
+        if (err) 
+            return err;
+    }
+    return 0;
+}
