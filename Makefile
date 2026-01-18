@@ -4,24 +4,6 @@ path_remapper-y := module.o \
 	modules/open.o \
 	ftrace/ftrace_helper.o
 
-# singularity-objs := main.o \
-#     modules/reset_tainted.o \
-#     modules/become_root.o \
-#     modules/hiding_directory.o \
-#     modules/hiding_tcp.o \
-#     modules/hooking_insmod.o \
-#     modules/clear_taint_dmesg.o \
-#     modules/hidden_pids.o \
-#     modules/hiding_stat.o \
-#     modules/hooks_write.o \
-#     modules/hiding_chdir.o \
-#     modules/hiding_readlink.o \
-#     modules/bpf_hook.o \
-#     modules/icmp.o \
-#     modules/audit.o \
-#     modules/task.o \
-#     modules/hide_module.o modules/trace.o ftrace/ftrace_helper.o
-
 .PHONY: all kmod install fmt
 
 all: kmod path_remapper_app
